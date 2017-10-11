@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/ereminIvan/fffb/app"
-	"time"
 )
 
 func main() {
@@ -11,8 +10,5 @@ func main() {
 		panic(err)
 	}
 
-	for {
-		a.Run()
-		time.Sleep(1 * time.Minute)
-	}
+	a.Run()
 }

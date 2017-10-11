@@ -1,6 +1,10 @@
 hash: 92d84ac7ec62b8b18402eb6025c1cc14a2a635eef6f2b3231b55c866837e3ff7
-updated: 2017-10-11T13:00:01.921668873+03:00
+updated: 2017-10-11T17:14:39.475728062+03:00
 imports:
 - name: github.com/huandu/facebook
   version: cb06a50311533d4c24211a80cffb6cf7eaeb5f52
+- name: github.com/technoweenie/multipartstreamer
+  version: a90a01d73ae432e2611d178c18367fbaa13e0154
+- name: gopkg.in/telegram-bot-api.v4
+  version: 0a57807db79efce7f6719fbb2c0e0f83fda79aec
 testImports: []

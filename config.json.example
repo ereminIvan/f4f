@@ -3,7 +3,10 @@
 		"app_secret": "your_app_secret",
 		"app_id": "your_app_id",
 		"client_token": "your_client_id",
+		"feed_request_frequency": 1,//time frequency in minutes for getting last messages
 		"feed_url": "your_feed_url_for_reed"
 	},
-	"telegram": {}
+	"telegram": {
+		"toke": "your_http_token_for_bot" //http token for telegram bot
+	}
 }
