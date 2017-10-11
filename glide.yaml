@@ -1,0 +1,4 @@
+package: github.com/ereminIvan/fffb
+import:
+- package: github.com/huandu/facebook
+  version: v2.1.0

@@ -1,0 +1,9 @@
+{
+	"fb" : {
+		"app_secret": "your_app_secret",
+		"app_id": "your_app_id",
+		"client_token": "your_client_id",
+		"feed_url": "your_feed_url_for_reed"
+	},
+	"telegram": {}
+}
