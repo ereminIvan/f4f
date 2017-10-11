@@ -28,7 +28,7 @@ func NewTelegramService(cfg model.TelegramConfig) *telegramService {
 		log.Panic(err)
 	}
 
-	//bot.Debug = true
+	s.bot.Debug = cfg.DebugEnabled
 
 	log.Printf("Telegram: Authorized on account %s", s.bot.Self.UserName)
 
@@ -36,6 +36,31 @@ func NewTelegramService(cfg model.TelegramConfig) *telegramService {
 }
 
 func (s *telegramService) SendMessage(message model.Message) {
+	u := api.NewUpdate(0)
+	u.Timeout = 60
+
+	updates, err := s.bot.GetUpdates(u)
+
+	if err != nil {
+		panic(err)
+	}
+
+	for _, update := range updates {
+		log.Printf("Telegram: [%d][%s] %s", update.Message.Chat.ID, update.Message.From.UserName, update.Message.Text)
+		if update.Message == nil {
+			continue
+		}
+		msg := api.NewMessage(
+			update.Message.Chat.ID,
+			//fmt.Sprintf("Id: %s\nTime: %s\nMessage: %s\n", message.Id, message.UpdateTime, message.Message),
+			message.Message,
+		)
+		s.bot.Send(msg)
+	}
+}
+
+func (s *telegramService) UpdateChanel() {
+	//todo example
 	u := api.NewUpdate(0)
 	u.Timeout = 60
 
@@ -50,13 +75,11 @@ func (s *telegramService) SendMessage(message model.Message) {
 			continue
 		}
 
-		log.Printf("Telegram: [%s] %s", update.Message.From.UserName, update.Message.Text)
+		log.Printf("Telegram: [%s][%s] %s", update.Message.Chat.ID, update.Message.From.UserName, update.Message.Text)
 
-		//msg := api.NewMessage(update.Message.Chat.ID, update.Message.Text)
-		//msg.ReplyToMessageID = update.Message.MessageID
+		msg := api.NewMessage(update.Message.Chat.ID, update.Message.Text)
+		msg.ReplyToMessageID = update.Message.MessageID
 
-		msg := api.NewMessage(update.Message.Chat.ID, message.Message)
 		s.bot.Send(msg)
-		log.Printf("Telegram: loop by updates executed")
 	}
 }

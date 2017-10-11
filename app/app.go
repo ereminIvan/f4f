@@ -12,7 +12,7 @@ import (
 	"github.com/ereminIvan/fffb/service"
 )
 
-type Application struct {
+type application struct {
 	config model.Config
 
 	fbService       IFBService
@@ -29,8 +29,8 @@ type ITelegramService interface {
 	SendMessage(message model.Message)
 }
 
-func Init() (*Application, error) {
-	a := &Application{}
+func Init() (*application, error) {
+	a := &application{}
 	if err := a.readConfig(); err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func Init() (*Application, error) {
 	return a, nil
 }
 
-func (a *Application) readConfig() error {
+func (a *application) readConfig() error {
 	file, err := ioutil.ReadFile("./config.json")
 
 	if err != nil {
@@ -46,29 +46,40 @@ func (a *Application) readConfig() error {
 	}
 
 	if err := json.Unmarshal(file, &a.config); err != nil {
-		return errors.New("Error during unmarshal config.json: " + err.Error())
+		return errors.New("Error during unmarshal config.json: " + err.Error() + "\n" + string(file))
 	}
+
+	log.Printf("Starting Application with config: %#v", a.config)
 
 	return nil
 }
 
-func (a *Application) initServices() {
+func (a *application) initServices() {
 	a.Once.Do(func() {
 		a.fbService = service.NewFBService(a.config.FB)
 		a.telegramService = service.NewTelegramService(a.config.Telegram)
 	})
 }
 
-func (a *Application) Run() {
+func (a *application) Run() {
+	log.Print("Start application ...")
 	for {
 		newMessages := a.fbService.GetLastFeedMessages()
 
 		for _, message := range newMessages {
 			a.telegramService.SendMessage(message)
-			log.Printf("DEBUG: After telegram call")
+			time.Sleep(1 * time.Second)
 		}
 
-		//time.Sleep(time.Duration(a.config.FB.FeedRequestFrequency) * time.Minute)
-		time.Sleep(2 * time.Second)
+		time.Sleep(time.Duration(a.config.FB.FeedRequestFrequency) * time.Minute)
 	}
+}
+
+func (a *application) Finish() {
+	log.Print("Finalizing application ...")
+	a.dumpData()
+}
+
+func (a *application) dumpData() {
+	log.Print("Dumping data ...")
 }

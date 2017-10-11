@@ -34,6 +34,10 @@ func (s *fbService) GetLastFeedMessages() []model.Message {
 		s.session = globalApp.Session(globalApp.AppAccessToken())
 	}
 
+	if s.config.DebugEnabled {
+		s.session.SetDebug(api.DebugMode(s.config.DebugMode))
+	}
+
 	// validate access token. err is nil if token is valid.
 	if err := s.session.Validate(); err != nil {
 		log.Printf("FB: Error ocured during fb session validation: %v", err)

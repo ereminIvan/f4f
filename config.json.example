@@ -4,9 +4,14 @@
 		"app_id": "your_app_id",
 		"client_token": "your_client_id",
 		"feed_request_frequency": 1,//time frequency in minutes for getting last messages
-		"feed_url": "your_feed_url_for_reed"
+		"feed_url": "your_feed_url_for_reed",
+		"debug_enabled": false, //is debug enabled
+		"debug_mode": "warning" //set debug mode if enabled: all|info|warning
 	},
 	"telegram": {
-		"toke": "your_http_token_for_bot" //http token for telegram bot
-	}
+		"toke": "your_http_token_for_bot", //http token for telegram bot
+		"debug_enabled": false //is debug enabled
+	},
+	"keywords_filter": "поисках ищет ищу ищем девушку девочку девушка девочке",
+	"keywords_search": "метро м."
 }
