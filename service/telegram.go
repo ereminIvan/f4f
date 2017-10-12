@@ -54,11 +54,11 @@ func (s *tgService) SendMessage(message model.Message) {
 		s.chats[update.Message.From.UserName] = update.Message.Chat.ID
 		//log.Printf("Telegram: SendMessage [%d][%s] %s", update.Message.Chat.ID, update.Message.From.UserName, update.Message.Text)
 	}
-	log.Printf("Telegram: SendMessage [read chats]: %+v", s.chats)
+	log.Printf("Telegram: SendMessage Chats:: %+v", s.chats)
 	//send to all subscribers new message
 	for _, chatID := range s.chats {
 		text := message.String()
-		log.Printf("Telegram: SendMessage [chat]:%d | [text len]:%d", chatID, len(text))
+		//log.Printf("Telegram: SendMessage [chat]:%d | [text len]:%d", chatID, len(text))
 		s.bot.Send(NewMessage(chatID, text))
 	}
 }

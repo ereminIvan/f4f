@@ -8,6 +8,8 @@ import (
 	"github.com/ereminIvan/fffb/model"
 )
 
+var globalApp *api.App
+
 type fbService struct {
 	config  model.FBConfig
 	session *api.Session
@@ -27,10 +29,11 @@ func NewFBService(cfg model.FBConfig, dumpMessages map[string]struct{}) *fbServi
 
 //GetLastFeedMessages - get latest unread feed messages
 func (s *fbService) LatestMessages() []model.Message {
-	log.Print("FB: Getting new messages")
+	//log.Print("FB: Getting new messages")
 	// create a global App var to hold app id and secret.
-	var globalApp = api.New(s.config.AppId, s.config.AppSecret)
-
+	if globalApp == nil {
+		globalApp = api.New(s.config.AppId, s.config.AppSecret)
+	}
 	// if there is another way to get decoded access token,
 	// creates a session directly with the token.
 	if s.session == nil {
@@ -42,9 +45,9 @@ func (s *fbService) LatestMessages() []model.Message {
 	}
 
 	// validate access token. err is nil if token is valid.
-	if err := s.session.Validate(); err != nil {
-		log.Printf("FB: Session validation error: %v", err)
-	}
+	//if err := s.session.Validate(); err != nil {
+	//	log.Printf("FB: Session validation error: %v", err)
+	//}
 
 	// use session to send api request with access token.
 	res, _ := s.session.Get(s.config.FeedURL, nil)
@@ -54,10 +57,6 @@ func (s *fbService) LatestMessages() []model.Message {
 
 	messages := s.processMessages(r)
 
-	//todo check if params has `limit` parameter
-	if len(messages) >= int(s.config.FeedLimit) {
-		messages = messages[len(messages)-int(s.config.FeedLimit):]
-	}
 	return messages
 }
 
@@ -65,7 +64,7 @@ func (s *fbService) LatestMessages() []model.Message {
 func (s *fbService) processMessages(m []map[string]string) []model.Message {
 	result := []model.Message{}
 
-	log.Printf("FB: Count of old messages is: %d", len(s.readMessages))
+	//log.Printf("FB: Count of old messages is: %d", len(s.readMessages))
 
 	for _, item := range m {
 		if _, ok := s.readMessages[item["id"]]; ok {
@@ -81,9 +80,19 @@ func (s *fbService) processMessages(m []map[string]string) []model.Message {
 		})
 	}
 
-	log.Printf("FB: Count of new messages is: %d", len(result))
+	//reverse for sending
+	reverse := make([]model.Message, len(result))
+	for idx, m := range result {
+		reverse[len(result)-1-idx] = m
+	}
+	//todo check if params has `limit` parameter
+	//if len(result) >= int(s.config.FeedLimit) {
+	//	result = result[:int(s.config.FeedLimit) - 1]
+	//}
 
-	return result
+	log.Printf("FB: Count of new messages is: %d", len(reverse))
+
+	return reverse
 }
 
 //ReadMessages - receive all read messages ids

@@ -32,15 +32,23 @@ type Message struct {
 	UpdateTime string
 	Message    string
 	Type       MessageType
+	DebugInfo  string
 }
 
 //String build message text
 func (m *Message) String() string {
 	parts := strings.Split(m.Id, "_")
 	if len(parts) != 2 {
-		log.Printf("Invalid message ID value: %s ", m.Id)
+		log.Fatalf("Invalid MessageID value: %s ", m.Id)
 		return m.Message
 	}
 	link := fmt.Sprintf(`<a href="https://m.facebook.com/groups/%s?view=permalink&id=%s">post link</a>`, parts[0], parts[1])
-	return fmt.Sprintf("%s %s\n%s\n%s", link, m.Type.String(), m.UpdateTime, m.Message)
+	return fmt.Sprintf("%s %s\n%s\n%s\n%s", link, m.Type.String(), m.UpdateTime, m.Message, m.DebugInfo)
+}
+
+func (m *Message) AppendDebug(t string) {
+	if m.DebugInfo == "" {
+		m.DebugInfo = "Debug Info: "
+	}
+	m.DebugInfo = m.DebugInfo + "\n" + t
 }

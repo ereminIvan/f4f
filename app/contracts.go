@@ -13,5 +13,5 @@ type ITelegramService interface {
 }
 
 type IFilterService interface {
-	GetType(text string) model.MessageType
+	SetType(message *model.Message)
 }

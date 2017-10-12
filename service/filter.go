@@ -2,6 +2,7 @@ package service
 
 import (
 	"log"
+	"fmt"
 	"strings"
 
 	"github.com/ereminIvan/fffb/model"
@@ -35,30 +36,30 @@ func NewFilterService(cfg model.Filter) *filterService {
 	}
 }
 
-func (fs *filterService) GetType(text string) model.MessageType {
-	fs.currentText = strings.ToLower(text)
+func (fs *filterService) SetType(message *model.Message) {
+	fs.currentText = strings.ToLower(message.Message)
 	fs.currentTextSlice = strings.Fields(fs.currentText)
 
 	landlordIdx := fs.getIndex(fs.landlordKeywords)
-	spamIdx := fs.getIndex(fs.spamKeywords)
 	tenantIdx := fs.getIndex(fs.tenantKeywords)
+	spamIdx := fs.getIndex(fs.spamKeywords)
 
-	log.Printf("Filter service: landlord message type with index %f > 0", landlordIdx)
-	log.Printf("Filter service: tenant message type with index %f > 0.09", tenantIdx)
-	log.Printf("Filter service: spam message type with index %f > 0.09", spamIdx)
+	message.AppendDebug(fmt.Sprintf("landlord index: %f\ntenant index: %f\nspam index: %f", landlordIdx, tenantIdx, spamIdx))
 
 	if spamIdx > landlordIdx {
-		return model.MessageTypeSpam
+		message.Type = model.MessageTypeSpam
+		return
 	}
 	if tenantIdx > landlordIdx {
-		return model.MessageTypeTenant
+		message.Type = model.MessageTypeTenant
+		return
 	}
 	if landlordIdx > 0 {
-		return model.MessageTypeLandlord
+		message.Type = model.MessageTypeLandlord
+		return
 	}
-
-	log.Print("Filter service: unknown message type with")
-	return model.MessageTypeUnknown
+	message.Type = model.MessageTypeUnknown
+	return
 }
 
 func (fs *filterService) getIndex(dic []string) float32 {
@@ -68,13 +69,9 @@ func (fs *filterService) getIndex(dic []string) float32 {
 		occurred += strings.Count(fs.currentText, kw)
 	}
 
-	log.Printf("Filter service [occured: %d]", occurred)
-
 	if occurred > 0 {
 		idx := float32(occurred) / float32(len(fs.currentTextSlice))
-		log.Printf("float32(occurred)[%d] / float32(len(fs.currentTextSlice))[%d] = %f", occurred, len(fs.currentTextSlice), idx)
 		return idx
 	}
-
 	return float32(occurred)
 }

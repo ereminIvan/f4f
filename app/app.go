@@ -3,6 +3,7 @@ package app
 import (
 	"log"
 	"sync"
+	"strings"
 	"time"
 
 	"github.com/ereminIvan/fffb/model"
@@ -67,6 +68,7 @@ func (a *application) Run(shutdown chan struct{}) {
 	log.Print("Run application ...")
 
 	for {
+		log.Printf(strings.Repeat("=", 100))
 		//used non blocking chanel read for stopping request loop
 		select {
 		case <-shutdown:
@@ -77,13 +79,17 @@ func (a *application) Run(shutdown chan struct{}) {
 
 		go func() {
 			for _, message := range newMessages {
-				message.Type = a.filterService.GetType(message.Message) //todo
+				a.filterService.SetType(&message)
+				//todo uncomment after calibrating
+				//if message.Type == model.MessageTypeSpam || message.Type == model.MessageTypeTenant {
+				//	continue
+				//}
 				a.tgService.SendMessage(message)
 				time.Sleep(1 * time.Second)
 			}
 		}()
 
-		log.Printf("Pause before next FB request %d seconds", time.Duration(a.config.FB.Delay)*time.Second)
+		//log.Printf("Pause before next FB request %d seconds", time.Duration(a.config.FB.Delay))
 		time.Sleep(time.Duration(a.config.FB.Delay) * time.Second)
 	}
 
@@ -99,6 +105,7 @@ func (a *application) Stop() {
 	log.Print("Shutdown application ... awaiting finish")
 }
 
+//dumpData
 func (a *application) dumpData() {
 	log.Print("Dumping data ...")
 	if err := a.writeFBDump(a.fbService.ReadMessages()); err != nil {

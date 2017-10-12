@@ -1,5 +1,4 @@
 vendor/
 .idea/
 config.json
-tg.dump
-fb.dump
+*.dump
