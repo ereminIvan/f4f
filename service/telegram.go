@@ -47,16 +47,19 @@ func (s *tgService) SendMessage(message model.Message) {
 		panic(err)
 	}
 
+	log.Print("Telegram: SendMessage [read updates]")
 	//read all updates
 	for _, update := range updates {
 		//append new user chats if not exist | don't check existence because chat id could be new
 		s.chats[update.Message.From.UserName] = update.Message.Chat.ID
-		log.Printf("Telegram: [%d][%s] %s", update.Message.Chat.ID, update.Message.From.UserName, update.Message.Text)
+		//log.Printf("Telegram: SendMessage [%d][%s] %s", update.Message.Chat.ID, update.Message.From.UserName, update.Message.Text)
 	}
-
+	log.Printf("Telegram: SendMessage [read chats]: %+v", s.chats)
 	//send to all subscribers new message
-	for _, id := range s.chats {
-		s.bot.Send(NewMessage(id, message.String()))
+	for _, chatID := range s.chats {
+		text := message.String()
+		log.Printf("Telegram: SendMessage [chat]:%d | [text len]:%d", chatID, len(text))
+		s.bot.Send(NewMessage(chatID, text))
 	}
 }
 

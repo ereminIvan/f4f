@@ -11,3 +11,7 @@ type ITelegramService interface {
 	SendMessage(message model.Message)
 	Chats() map[string]int64
 }
+
+type IFilterService interface {
+	GetType(text string) model.MessageType
+}

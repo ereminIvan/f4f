@@ -12,8 +12,9 @@ import (
 type application struct {
 	config model.Config
 
-	fbService IFBService
-	tgService ITelegramService
+	fbService     IFBService
+	tgService     ITelegramService
+	filterService IFilterService
 
 	sync.Once
 }
@@ -55,6 +56,7 @@ func Init(configPath, fbDumpPath, tgDumpPath string) (*application, error) {
 func (a *application) initServices(fbDump map[string]struct{}, tgDump map[string]int64) {
 	log.Print("Init services ...")
 	a.Once.Do(func() {
+		a.filterService = service.NewFilterService(a.config.Filter)
 		a.fbService = service.NewFBService(a.config.FB, fbDump)
 		a.tgService = service.NewTelegramService(a.config.Telegram, tgDump)
 	})
@@ -75,6 +77,7 @@ func (a *application) Run(shutdown chan struct{}) {
 
 		go func() {
 			for _, message := range newMessages {
+				message.Type = a.filterService.GetType(message.Message) //todo
 				a.tgService.SendMessage(message)
 				time.Sleep(1 * time.Second)
 			}

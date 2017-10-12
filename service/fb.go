@@ -94,7 +94,3 @@ func (s *fbService) ReadMessages() []string {
 	}
 	return result
 }
-
-func (s *fbService) IsValidMessage(message string) bool {
-	return false
-}

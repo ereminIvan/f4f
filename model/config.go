@@ -2,16 +2,15 @@ package model
 
 import (
 	"time"
-	"promo_tools_api/common/errors"
+	"errors"
 )
 
 //Config configuration of application
 type Config struct {
-	FB             FBConfig       `json:"fb"`
-	Telegram       TelegramConfig `json:"telegram"`
-	DebugEnabled   bool           `json:"debug_enabled"`
-	KeywordsFilter string         `json:"keywords_filter"`
-	KeywordsSearch string         `json:"keywords_search"`
+	FB           FBConfig       `json:"fb"`
+	Telegram     TelegramConfig `json:"telegram"`
+	DebugEnabled bool           `json:"debug_enabled"`
+	Filter       Filter         `json:"filter"`
 }
 
 //FBConfig config of fb application and subscription
@@ -32,6 +31,12 @@ type FBConfig struct {
 type TelegramConfig struct {
 	Token        string `json:"token"`
 	DebugEnabled bool   `json:"debug_enabled"`
+}
+
+type Filter struct {
+	KeywordsLandlord string `json:"keywords_landlord"`
+	KeywordsTenant   string `json:"keywords_tenant"`
+	KeywordsSpam     string `json:"keywords_spam"`
 }
 
 //Valida config parameters
