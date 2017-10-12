@@ -22,8 +22,6 @@ var (
 	fbDumpFilePath string
 	tgDumpFilePath string
 	configFilePath string
-
-	awaiting chan bool
 )
 
 func Init(configPath, fbDumpPath, tgDumpPath string) (*application, error) {

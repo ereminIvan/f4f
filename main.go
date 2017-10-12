@@ -21,24 +21,25 @@ func init() {
 }
 
 func main() {
+	//catch system signals for future graceful shutdown
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-
+	//chanel for graceful shutdown
 	done := make(chan struct{})
 
-	a, err := app.Init(configPath, fbDumpPath, tgDumpPath)
+	application, err := app.Init(configPath, fbDumpPath, tgDumpPath)
 	if err != nil {
 		panic(err)
 	}
 
 	go func() {
 		sig := <-signals
-		log.Printf("Interupt signal %v", sig)
-		a.Stop()
+		log.Printf("Interruption signal has received: %v", sig)
+		application.Stop()
 		done <- struct{}{}
 	}()
 
-	a.Run(done)
+	application.Run(done)
 
 	close(signals)
 	close(done)
