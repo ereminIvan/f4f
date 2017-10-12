@@ -9,4 +9,5 @@ type IFBService interface {
 
 type ITelegramService interface {
 	SendMessage(message model.Message)
+	Chats() map[string]int64
 }

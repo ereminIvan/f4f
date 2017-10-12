@@ -8,8 +8,9 @@ import (
 	"github.com/ereminIvan/fffb/model"
 )
 
-type telegramService struct {
+type tgService struct {
 	config model.TelegramConfig
+	chats  map[string]int64 // list of chat ids
 	bot    *api.BotAPI
 }
 
@@ -17,10 +18,11 @@ type IFBService interface {
 	SendMessage(message model.Message)
 }
 
-func NewTelegramService(cfg model.TelegramConfig) *telegramService {
+func NewTelegramService(cfg model.TelegramConfig, chats map[string]int64) *tgService {
 	var err error
-	s := &telegramService{
+	s := &tgService{
 		config: cfg,
+		chats:  chats,
 	}
 	s.bot, err = api.NewBotAPI(cfg.Token)
 
@@ -35,9 +37,9 @@ func NewTelegramService(cfg model.TelegramConfig) *telegramService {
 	return s
 }
 
-func (s *telegramService) SendMessage(message model.Message) {
+func (s *tgService) SendMessage(message model.Message) {
 	log.Print("Telegram: Sending message")
-	u := api.UpdateConfig{Limit:1, Offset:0, Timeout: 60}
+	u := api.UpdateConfig{Limit: 100, Offset: 1, Timeout: 60}
 
 	updates, err := s.bot.GetUpdates(u)
 
@@ -45,18 +47,37 @@ func (s *telegramService) SendMessage(message model.Message) {
 		panic(err)
 	}
 
+	//read all updates
 	for _, update := range updates {
+		//append new user chats if not exist | don't check existence because chat id could be new
+		s.chats[update.Message.From.UserName] = update.Message.Chat.ID
 		log.Printf("Telegram: [%d][%s] %s", update.Message.Chat.ID, update.Message.From.UserName, update.Message.Text)
-		if update.Message == nil {
-			continue
-		}
-		msg := api.NewMessage(update.Message.Chat.ID, message.Message)
-		s.bot.Send(msg)
+	}
+
+	//send to all subscribers new message
+	for _, id := range s.chats {
+		s.bot.Send(NewMessage(id, message.String()))
 	}
 }
 
+func NewMessage(chatID int64, message string) api.MessageConfig {
+	return api.MessageConfig{
+		BaseChat: api.BaseChat{
+			ChatID:           chatID,
+			ReplyToMessageID: 0,
+		},
+		Text:                  message,
+		ParseMode:             "HTML",
+		DisableWebPagePreview: false,
+	}
+}
+
+func (s *tgService) Chats() map[string]int64 {
+	return s.chats
+}
+
 //todo remove it
-func (s *telegramService) UpdateChanel() {
+func (s *tgService) UpdateChanel() {
 	u := api.NewUpdate(0)
 	u.Timeout = 60
 
@@ -73,7 +94,7 @@ func (s *telegramService) UpdateChanel() {
 
 		log.Printf("Telegram: [%s][%s] %s", update.Message.Chat.ID, update.Message.From.UserName, update.Message.Text)
 
-		msg := api.NewMessage(update.Message.Chat.ID, update.Message.Text)
+		msg := NewMessage(update.Message.Chat.ID, update.Message.Text)
 		msg.ReplyToMessageID = update.Message.MessageID
 
 		s.bot.Send(msg)

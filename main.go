@@ -10,11 +10,13 @@ import (
 	"github.com/ereminIvan/fffb/app"
 )
 
-var configPath, fbDump string
+var configPath, fbDumpPath, tgDumpPath string
 
 func init() {
-	flag.StringVar(&fbDump,"fb_dump", "./fb.dump", "Path to dump file of old facebook message")
 	flag.StringVar(&configPath,"config", "./config.json", "Path to config")
+	flag.StringVar(&fbDumpPath, "fb_dump", "./fb.dump", "Path to dump file of old facebook message")
+	flag.StringVar(&tgDumpPath, "tg_dump", "./tg.dump", "Path to dump file telegram subscriber chats")
+
 	flag.Parse()
 }
 
@@ -22,9 +24,9 @@ func main() {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
-	done := make(chan bool, 1)
+	done := make(chan struct{})
 
-	a, err := app.Init(configPath, fbDump)
+	a, err := app.Init(configPath, fbDumpPath, tgDumpPath)
 	if err != nil {
 		panic(err)
 	}
@@ -33,12 +35,10 @@ func main() {
 		sig := <-signals
 		log.Printf("Interupt signal %v", sig)
 		a.Stop()
-		done <- true
+		done <- struct{}{}
 	}()
 
-	a.Run()
-
-	<-done
+	a.Run(done)
 
 	close(signals)
 	close(done)

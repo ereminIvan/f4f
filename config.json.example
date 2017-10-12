@@ -3,7 +3,8 @@
 		"app_secret": "your_app_secret",
 		"app_id": "your_app_id",
 		"client_token": "your_client_id",
-		"feed_request_frequency": 1,//time frequency in minutes for getting last messages
+		"delay": 60,//time frequency in seconds for getting last messages
+		"feed_limit": 3,//limit of getting messages from feed | for reduce spam to telegram bot
 		"feed_url": "your_feed_url_for_reed",
 		"debug_enabled": false, //is debug enabled
 		"debug_mode": "warning" //set debug mode if enabled: all|info|warning

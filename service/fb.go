@@ -43,7 +43,7 @@ func (s *fbService) LatestMessages() []model.Message {
 
 	// validate access token. err is nil if token is valid.
 	if err := s.session.Validate(); err != nil {
-		log.Printf("FB: Error ocured during fb session validation: %v", err)
+		log.Printf("FB: Session validation error: %v", err)
 	}
 
 	// use session to send api request with access token.
@@ -52,7 +52,13 @@ func (s *fbService) LatestMessages() []model.Message {
 	r := []map[string]string{}
 	res.DecodeField("data", &r)
 
-	return s.processMessages(r)
+	messages := s.processMessages(r)
+
+	//todo check if params has `limit` parameter
+	if len(messages) >= int(s.config.FeedLimit) {
+		messages = messages[len(messages)-int(s.config.FeedLimit):]
+	}
+	return messages
 }
 
 //processMessages - get latest unread messages list form message pull
@@ -68,7 +74,6 @@ func (s *fbService) processMessages(m []map[string]string) []model.Message {
 
 		//add message id to reade messages
 		s.readMessages[item["id"]] = struct{}{}
-
 		result = append(result, model.Message{
 			Message:    item["message"],
 			UpdateTime: item["updated_time"],

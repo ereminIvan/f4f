@@ -23,8 +23,9 @@ type FBConfig struct {
 	DebugEnabled bool   `json:"debug_enabled"`
 	DebugMode    string `json:"debug_mode"`
 
-	FeedRequestFrequency time.Duration `json:"feed_request_frequency"`
-	FeedURL              string        `json:"feed_url"`
+	Delay     time.Duration `json:"delay"`
+	FeedURL   string        `json:"feed_url"`
+	FeedLimit uint32        `json:"feed_limit"`
 }
 
 //TelegramConfig configuration of telegram application

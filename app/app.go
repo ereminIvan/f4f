@@ -12,20 +12,23 @@ import (
 type application struct {
 	config model.Config
 
-	fbService       IFBService
-	telegramService ITelegramService
+	fbService IFBService
+	tgService ITelegramService
 
 	sync.Once
 }
 
 var (
 	fbDumpFilePath string
+	tgDumpFilePath string
 	configFilePath string
+
 	awaiting chan bool
 )
 
-func Init(configPath, fbDumpPath string) (*application, error) {
+func Init(configPath, fbDumpPath, tgDumpPath string) (*application, error) {
 	fbDumpFilePath = fbDumpPath
+	tgDumpFilePath = tgDumpPath
 	configFilePath = configPath
 
 	log.Print("Init Application ...")
@@ -36,61 +39,71 @@ func Init(configPath, fbDumpPath string) (*application, error) {
 		return nil, err
 	}
 
-	fbDump, err := a.readDumps()
+	fbDump, err := a.readFBDump()
 	if err != nil {
-		log.Printf("Cant read dump: %v", err)
+		log.Printf("Cant read FB dump: %v", err)
+	}
+	tgDump, err := a.readTGDump()
+	if err != nil {
+		log.Printf("Cant read TG dump: %v", err)
 	}
 
-	a.initServices(fbDump)
+	a.initServices(fbDump, tgDump)
 
 	return a, nil
 }
 
 //initServices - init services
-func (a *application) initServices(fbDump map[string]struct{}) {
+func (a *application) initServices(fbDump map[string]struct{}, tgDump map[string]int64) {
 	log.Print("Init services ...")
 	a.Once.Do(func() {
 		a.fbService = service.NewFBService(a.config.FB, fbDump)
-		a.telegramService = service.NewTelegramService(a.config.Telegram)
+		a.tgService = service.NewTelegramService(a.config.Telegram, tgDump)
 	})
 }
 
 //Run application
-func (a *application) Run() {
+func (a *application) Run(shutdown chan struct{}) {
 	log.Print("Run application ...")
-	pause := time.Duration(a.config.FB.FeedRequestFrequency) * 5 * time.Second
-	awaiting = make(chan bool, 1)
 
 	for {
+		//used non blocking chanel read for stopping request loop
+		select {
+		case <-shutdown:
+			return
+		default:
+		}
 		newMessages := a.fbService.LatestMessages()
 
 		go func() {
 			for _, message := range newMessages {
-				a.telegramService.SendMessage(message)
+				a.tgService.SendMessage(message)
 				time.Sleep(1 * time.Second)
 			}
 		}()
 
-		log.Printf("Pause before next FB request %d seconds", pause/time.Second)
-		time.Sleep(pause)
-		awaiting <- true
+		log.Printf("Pause before next FB request %d seconds", time.Duration(a.config.FB.Delay)*time.Second)
+		time.Sleep(time.Duration(a.config.FB.Delay) * time.Second)
 	}
 
 	a.Stop()
 }
 
+//Stop graceful stop application
 func (a *application) Stop() {
 	log.Print("Shutdown awaiting finishing")
 
-	<-awaiting
-
-	log.Print("Shutdown application ...")
 	a.dumpData()
+
+	log.Print("Shutdown application ... awaiting finish")
 }
 
 func (a *application) dumpData() {
 	log.Print("Dumping data ...")
 	if err := a.writeFBDump(a.fbService.ReadMessages()); err != nil {
+		log.Printf("Dump: Error during dump FB messages %v", err)
+	}
+	if err := a.writeTGDump(a.tgService.Chats()); err != nil {
 		log.Printf("Dump: Error during dump FB messages %v", err)
 	}
 }
