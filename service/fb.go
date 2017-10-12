@@ -6,7 +6,6 @@ import (
 	api "github.com/huandu/facebook"
 
 	"github.com/ereminIvan/fffb/model"
-	"fmt"
 )
 
 type fbService struct {
@@ -51,8 +50,6 @@ func (s *fbService) LatestMessages() []model.Message {
 	res, _ := s.session.Get(s.config.FeedURL, nil)
 
 	r := []map[string]string{}
-	res.DebugInfo()
-	fmt.Print(res)
 	res.DecodeField("data", &r)
 
 	return s.processMessages(r)

@@ -21,6 +21,7 @@ type application struct {
 var (
 	fbDumpFilePath string
 	configFilePath string
+	awaiting chan bool
 )
 
 func Init(configPath, fbDumpPath string) (*application, error) {
@@ -57,7 +58,8 @@ func (a *application) initServices(fbDump map[string]struct{}) {
 //Run application
 func (a *application) Run() {
 	log.Print("Run application ...")
-	pause := time.Duration(a.config.FB.FeedRequestFrequency) * time.Minute
+	pause := time.Duration(a.config.FB.FeedRequestFrequency) * 5 * time.Second
+	awaiting = make(chan bool, 1)
 
 	for {
 		newMessages := a.fbService.LatestMessages()
@@ -71,12 +73,17 @@ func (a *application) Run() {
 
 		log.Printf("Pause before next FB request %d seconds", pause/time.Second)
 		time.Sleep(pause)
+		awaiting <- true
 	}
 
 	a.Stop()
 }
 
 func (a *application) Stop() {
+	log.Print("Shutdown awaiting finishing")
+
+	<-awaiting
+
 	log.Print("Shutdown application ...")
 	a.dumpData()
 }

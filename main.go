@@ -30,15 +30,15 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("Recived interupt signal %v", <-signals)
+		sig := <-signals
+		log.Printf("Interupt signal %v", sig)
+		a.Stop()
 		done <- true
 	}()
 
 	a.Run()
 
 	<-done
-
-	a.Stop()
 
 	close(signals)
 	close(done)
