@@ -13,5 +13,6 @@
 		"debug_enabled": false //is debug enabled
 	},
 	"keywords_filter": "поисках ищет ищу ищем девушку девочку девушка девочке",
-	"keywords_search": "метро м."
+	"keywords_search": "метро м.",
+    "debug_enabled": true
 }

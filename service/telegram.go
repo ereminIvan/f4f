@@ -36,8 +36,8 @@ func NewTelegramService(cfg model.TelegramConfig) *telegramService {
 }
 
 func (s *telegramService) SendMessage(message model.Message) {
-	u := api.NewUpdate(0)
-	u.Timeout = 60
+	log.Print("Telegram: Sending message")
+	u := api.UpdateConfig{Limit:1, Offset:0, Timeout: 60}
 
 	updates, err := s.bot.GetUpdates(u)
 
@@ -50,17 +50,13 @@ func (s *telegramService) SendMessage(message model.Message) {
 		if update.Message == nil {
 			continue
 		}
-		msg := api.NewMessage(
-			update.Message.Chat.ID,
-			//fmt.Sprintf("Id: %s\nTime: %s\nMessage: %s\n", message.Id, message.UpdateTime, message.Message),
-			message.Message,
-		)
+		msg := api.NewMessage(update.Message.Chat.ID, message.Message)
 		s.bot.Send(msg)
 	}
 }
 
+//todo remove it
 func (s *telegramService) UpdateChanel() {
-	//todo example
 	u := api.NewUpdate(0)
 	u.Timeout = 60
 

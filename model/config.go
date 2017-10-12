@@ -1,11 +1,15 @@
 package model
 
-import "time"
+import (
+	"time"
+	"promo_tools_api/common/errors"
+)
 
 //Config configuration of application
 type Config struct {
 	FB             FBConfig       `json:"fb"`
 	Telegram       TelegramConfig `json:"telegram"`
+	DebugEnabled   bool           `json:"debug_enabled"`
 	KeywordsFilter string         `json:"keywords_filter"`
 	KeywordsSearch string         `json:"keywords_search"`
 }
@@ -27,4 +31,15 @@ type FBConfig struct {
 type TelegramConfig struct {
 	Token        string `json:"token"`
 	DebugEnabled bool   `json:"debug_enabled"`
+}
+
+//Valida config parameters
+func (c *Config) Validate() (bool, error) {
+	if c.FB.AppSecret == "" || c.FB.AppId == "" {
+		return false, errors.New("Error: Facebook `app_secret`, `app_id`, `feed_url` could not be empty")
+	}
+	if c.Telegram.Token == "" {
+		return false, errors.New("Error: Telegram `token` could not be empty")
+	}
+	return true, nil
 }

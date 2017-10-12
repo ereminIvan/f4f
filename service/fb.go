@@ -6,25 +6,29 @@ import (
 	api "github.com/huandu/facebook"
 
 	"github.com/ereminIvan/fffb/model"
+	"fmt"
 )
 
 type fbService struct {
 	config  model.FBConfig
 	session *api.Session
 
-	radMessages map[string]map[string]string
+	readMessages map[string]struct{} // list of read messages
 }
 
-func NewFBService(cfg model.FBConfig) *fbService {
-	radMessages := make(map[string]map[string]string)
-
+func NewFBService(cfg model.FBConfig, dumpMessages map[string]struct{}) *fbService {
+	if dumpMessages == nil {
+		dumpMessages = make(map[string]struct{})
+	}
 	return &fbService{
-		config:      cfg,
-		radMessages: radMessages,
+		config:       cfg,
+		readMessages: dumpMessages,
 	}
 }
 
-func (s *fbService) GetLastFeedMessages() []model.Message {
+//GetLastFeedMessages - get latest unread feed messages
+func (s *fbService) LatestMessages() []model.Message {
+	log.Print("FB: Getting new messages")
 	// create a global App var to hold app id and secret.
 	var globalApp = api.New(s.config.AppId, s.config.AppSecret)
 
@@ -47,29 +51,48 @@ func (s *fbService) GetLastFeedMessages() []model.Message {
 	res, _ := s.session.Get(s.config.FeedURL, nil)
 
 	r := []map[string]string{}
+	res.DebugInfo()
+	fmt.Print(res)
 	res.DecodeField("data", &r)
 
 	return s.processMessages(r)
 }
 
+//processMessages - get latest unread messages list form message pull
 func (s *fbService) processMessages(m []map[string]string) []model.Message {
 	result := []model.Message{}
 
-	log.Printf("FB: Count of old messages is : %d", len(s.radMessages))
+	log.Printf("FB: Count of old messages is: %d", len(s.readMessages))
 
 	for _, item := range m {
-		if _, ok := s.radMessages[item["id"]]; ok {
+		if _, ok := s.readMessages[item["id"]]; ok {
 			continue
 		}
-		s.radMessages[item["id"]] = item
-		msg := model.Message{
+
+		//add message id to reade messages
+		s.readMessages[item["id"]] = struct{}{}
+
+		result = append(result, model.Message{
 			Message:    item["message"],
 			UpdateTime: item["updated_time"],
 			Id:         item["id"],
-		}
-		result = append(result, msg)
+		})
 	}
+
 	log.Printf("FB: Count of new messages is: %d", len(result))
 
 	return result
+}
+
+//ReadMessages - receive all read messages ids
+func (s *fbService) ReadMessages() []string {
+	result := make([]string, 0, len(s.readMessages))
+	for id := range s.readMessages {
+		result = append(result, id)
+	}
+	return result
+}
+
+func (s *fbService) IsValidMessage(message string) bool {
+	return false
 }

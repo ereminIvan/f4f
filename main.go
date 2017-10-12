@@ -1,32 +1,45 @@
 package main
 
 import (
-	//"os"
-	//"os/signal"
-	//"syscall"
+	"flag"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/ereminIvan/fffb/app"
 )
 
+var configPath, fbDump string
+
+func init() {
+	flag.StringVar(&fbDump,"fb_dump", "./fb.dump", "Path to dump file of old facebook message")
+	flag.StringVar(&configPath,"config", "./config.json", "Path to config")
+	flag.Parse()
+}
+
 func main() {
-	a, err := app.Init()
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+
+	done := make(chan bool, 1)
+
+	a, err := app.Init(configPath, fbDump)
 	if err != nil {
 		panic(err)
 	}
-	//
-	//sigs := make(chan os.Signal, 1)
-	//done := make(chan bool, 1)
-	//
-	//signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	//
-	//go func() {
-	//	<-sigs
-	//	done <- true
-	//}()
+
+	go func() {
+		log.Printf("Recived interupt signal %v", <-signals)
+		done <- true
+	}()
 
 	a.Run()
 
-	//<-done
+	<-done
 
-	//a.Finish()
+	a.Stop()
+
+	close(signals)
+	close(done)
 }
