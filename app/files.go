@@ -8,14 +8,14 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/ereminIvan/fffb/model"
-	"strconv"
 )
 
 //readDumps - read list of old fb messages id
-func (a *application) readDumps() (map[string]struct{}, map[string]int64, error) {
+func (a *application) readDumps() (map[string]struct{}, map[int64]struct{}, error) {
 	fbDump, err := a.readFBDump()
 	tgDump, err := a.readTGDump()
 	return fbDump, tgDump, err
@@ -41,9 +41,9 @@ func (a *application) readFBDump() (map[string]struct{}, error) {
 	return fbResult, err
 }
 
-func (a *application) readTGDump() (map[string]int64, error) {
+func (a *application) readTGDump() (map[int64]struct{}, error) {
 	log.Print("Start reading Telegram messages dump ...")
-	result := make(map[string]int64)
+	result := make(map[int64]struct{})
 	file, err := os.Open(tgDumpFilePath)
 	if err != nil {
 		return result, err
@@ -55,9 +55,8 @@ func (a *application) readTGDump() (map[string]int64, error) {
 		if err = scanner.Err(); err != nil {
 			break
 		}
-		line := strings.Split(scanner.Text(), "|")
-		id, _ := strconv.ParseInt(line[1], 10, 64)
-		result[line[0]] = id
+		id, _ := strconv.ParseInt(scanner.Text(), 10, 64)
+		result[id] = struct{}{}
 	}
 	log.Printf("End read Telegram chats dump (%d subscribers)", len(result))
 	return result, err
@@ -75,14 +74,14 @@ func (a *application) writeFBDump(dump []string) error {
 }
 
 //writeTGDump - write tg chats dump to disk
-func (a *application) writeTGDump(dump map[string]int64) error {
+func (a *application) writeTGDump(dump map[int64]struct{}) error {
 	log.Print("Write Telegram chats dump ...")
 	if len(dump) == 0 {
 		return nil
 	}
 	dumpLines := make([]string, 0, len(dump))
-	for k, v := range dump {
-		dumpLines = append(dumpLines, fmt.Sprintf("%s|%d", k, v))
+	for k := range dump {
+		dumpLines = append(dumpLines, fmt.Sprintf("%s", k))
 	}
 	err := ioutil.WriteFile(tgDumpFilePath, []byte(strings.Join(dumpLines, "\n")), 0644)
 	log.Printf("Writed %d Telegram chats to dump", len(dump))

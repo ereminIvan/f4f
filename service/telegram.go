@@ -10,7 +10,7 @@ import (
 
 type tgService struct {
 	config model.TelegramConfig
-	chats  map[string]int64 // list of chat ids
+	chats  map[int64]struct{} // list of chat ids
 	bot    *api.BotAPI
 }
 
@@ -18,7 +18,7 @@ type IFBService interface {
 	SendMessage(message model.Message)
 }
 
-func NewTelegramService(cfg model.TelegramConfig, chats map[string]int64) *tgService {
+func NewTelegramService(cfg model.TelegramConfig, chats map[int64]struct{}) *tgService {
 	var err error
 	s := &tgService{
 		config: cfg,
@@ -51,14 +51,14 @@ func (s *tgService) SendMessage(message model.Message) {
 	//read all updates
 	for _, update := range updates {
 		//append new user chats if not exist | don't check existence because chat id could be new
-		s.chats[update.Message.From.UserName] = update.Message.Chat.ID
+		s.chats[update.Message.Chat.ID] = struct{}{}
 		//log.Printf("Telegram: SendMessage [%d][%s] %s", update.Message.Chat.ID, update.Message.From.UserName, update.Message.Text)
 	}
 	log.Printf("Telegram: SendMessage Chats:: %+v", s.chats)
 	//send to all subscribers new message
-	for _, chatID := range s.chats {
+	for chatID := range s.chats {
 		text := message.String()
-		//log.Printf("Telegram: SendMessage [chat]:%d | [text len]:%d", chatID, len(text))
+		log.Printf("Telegram: SendMessage [chat]:%d | [text len]:%d", chatID, len(text))
 		s.bot.Send(NewMessage(chatID, text))
 	}
 }
@@ -75,7 +75,7 @@ func NewMessage(chatID int64, message string) api.MessageConfig {
 	}
 }
 
-func (s *tgService) Chats() map[string]int64 {
+func (s *tgService) Chats() map[int64]struct{} {
 	return s.chats
 }
 

@@ -9,7 +9,7 @@ type IFBService interface {
 
 type ITelegramService interface {
 	SendMessage(message model.Message)
-	Chats() map[string]int64
+	Chats() map[int64]struct{}
 }
 
 type IFilterService interface {

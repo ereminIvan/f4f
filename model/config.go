@@ -1,8 +1,8 @@
 package model
 
 import (
-	"time"
 	"errors"
+	"time"
 )
 
 //Config configuration of application

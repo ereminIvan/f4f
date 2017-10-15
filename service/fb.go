@@ -29,15 +29,16 @@ func NewFBService(cfg model.FBConfig, dumpMessages map[string]struct{}) *fbServi
 
 //GetLastFeedMessages - get latest unread feed messages
 func (s *fbService) LatestMessages() []model.Message {
-	//log.Print("FB: Getting new messages")
+	log.Print("FB: Getting new messages")
 	// create a global App var to hold app id and secret.
 	if globalApp == nil {
 		globalApp = api.New(s.config.AppId, s.config.AppSecret)
 	}
 	// if there is another way to get decoded access token,
 	// creates a session directly with the token.
+	//todo access token
 	if s.session == nil {
-		s.session = globalApp.Session(globalApp.AppAccessToken())
+		s.session = globalApp.Session("")
 	}
 
 	if s.config.DebugEnabled {
@@ -45,9 +46,9 @@ func (s *fbService) LatestMessages() []model.Message {
 	}
 
 	// validate access token. err is nil if token is valid.
-	//if err := s.session.Validate(); err != nil {
-	//	log.Printf("FB: Session validation error: %v", err)
-	//}
+	if err := s.session.Validate(); err != nil {
+		log.Printf("FB: Session validation error: %v", err)
+	}
 
 	// use session to send api request with access token.
 	res, _ := s.session.Get(s.config.FeedURL, nil)
@@ -64,7 +65,7 @@ func (s *fbService) LatestMessages() []model.Message {
 func (s *fbService) processMessages(m []map[string]string) []model.Message {
 	result := []model.Message{}
 
-	//log.Printf("FB: Count of old messages is: %d", len(s.readMessages))
+	log.Printf("FB: Count of old messages is: %d", len(s.readMessages))
 
 	for _, item := range m {
 		if _, ok := s.readMessages[item["id"]]; ok {

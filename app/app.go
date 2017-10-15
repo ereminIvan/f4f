@@ -54,7 +54,7 @@ func Init(configPath, fbDumpPath, tgDumpPath string) (*application, error) {
 }
 
 //initServices - init services
-func (a *application) initServices(fbDump map[string]struct{}, tgDump map[string]int64) {
+func (a *application) initServices(fbDump map[string]struct{}, tgDump map[int64]struct{}) {
 	log.Print("Init services ...")
 	a.Once.Do(func() {
 		a.filterService = service.NewFilterService(a.config.Filter)
@@ -81,15 +81,14 @@ func (a *application) Run(shutdown chan struct{}) {
 			for _, message := range newMessages {
 				a.filterService.SetType(&message)
 				//todo uncomment after calibrating
-				//if message.Type == model.MessageTypeSpam || message.Type == model.MessageTypeTenant {
-				//	continue
-				//}
+				if message.Type == model.MessageTypeSpam || message.Type == model.MessageTypeTenant {
+					continue
+				}
 				a.tgService.SendMessage(message)
 				time.Sleep(1 * time.Second)
 			}
 		}()
-
-		//log.Printf("Pause before next FB request %d seconds", time.Duration(a.config.FB.Delay))
+		log.Printf("Pause before next FB request %d seconds", time.Duration(a.config.FB.Delay))
 		time.Sleep(time.Duration(a.config.FB.Delay) * time.Second)
 	}
 
