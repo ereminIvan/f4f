@@ -38,7 +38,7 @@ func (s *fbService) LatestMessages() []model.Message {
 	// creates a session directly with the token.
 	//todo access token
 	if s.session == nil {
-		s.session = globalApp.Session("")
+		s.session = globalApp.Session(globalApp.AppAccessToken())
 	}
 
 	if s.config.DebugEnabled {

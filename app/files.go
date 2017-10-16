@@ -81,7 +81,7 @@ func (a *application) writeTGDump(dump map[int64]struct{}) error {
 	}
 	dumpLines := make([]string, 0, len(dump))
 	for k := range dump {
-		dumpLines = append(dumpLines, fmt.Sprintf("%s", k))
+		dumpLines = append(dumpLines, fmt.Sprintf("%d", k))
 	}
 	err := ioutil.WriteFile(tgDumpFilePath, []byte(strings.Join(dumpLines, "\n")), 0644)
 	log.Printf("Writed %d Telegram chats to dump", len(dump))
