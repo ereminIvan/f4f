@@ -80,7 +80,6 @@ func (a *application) Run(shutdown chan struct{}) {
 		go func() {
 			for _, message := range newMessages {
 				a.filterService.SetType(&message)
-				//todo uncomment after calibrating
 				if message.Type == model.MessageTypeSpam || message.Type == model.MessageTypeTenant {
 					continue
 				}
