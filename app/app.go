@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ereminIvan/fffb/model"
-	"github.com/ereminIvan/fffb/service"
+	"github.com/iveronanomi/fffb/model"
+	"github.com/iveronanomi/fffb/service"
 )
 
 type application struct {

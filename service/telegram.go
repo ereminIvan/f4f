@@ -5,7 +5,7 @@ import (
 
 	api "gopkg.in/telegram-bot-api.v4"
 
-	"github.com/ereminIvan/fffb/model"
+	"github.com/iveronanomi/fffb/model"
 )
 
 type tgService struct {

@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/ereminIvan/fffb/app"
+	"github.com/iveronanomi/fffb/app"
 )
 
 var configPath, fbDumpPath, tgDumpPath string

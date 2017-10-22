@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ereminIvan/fffb/model"
+	"github.com/iveronanomi/fffb/model"
 )
 
 //readDumps - read list of old fb messages id

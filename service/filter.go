@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ereminIvan/fffb/model"
+	"github.com/iveronanomi/fffb/model"
 )
 
 const (

@@ -1,6 +1,6 @@
 package app
 
-import "github.com/ereminIvan/fffb/model"
+import "github.com/iveronanomi/fffb/model"
 
 type IFBService interface {
 	LatestMessages() []model.Message

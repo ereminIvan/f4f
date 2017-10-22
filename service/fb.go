@@ -5,7 +5,7 @@ import (
 
 	api "github.com/huandu/facebook"
 
-	"github.com/ereminIvan/fffb/model"
+	"github.com/iveronanomi/fffb/model"
 )
 
 var globalApp *api.App
